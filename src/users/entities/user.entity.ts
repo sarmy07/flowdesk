@@ -1,7 +1,9 @@
+import { Membership } from 'src/memberships/entities/membership.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -18,6 +20,9 @@ export class User {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Membership, (m) => m.user)
+  memberships: Membership[];
 
   @CreateDateColumn()
   createdAt: Date;

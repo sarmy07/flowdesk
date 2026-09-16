@@ -1,7 +1,9 @@
+import { Membership } from 'src/memberships/entities/membership.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -14,6 +16,9 @@ export class Organization {
     unique: true,
   })
   name: string;
+
+  @OneToMany(() => Membership, (m) => m.organization)
+  memberships: Membership[];
 
   @CreateDateColumn()
   createdAt: Date;
