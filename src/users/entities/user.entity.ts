@@ -13,7 +13,10 @@ export class User {
   id: string;
 
   @Column()
-  name: string;
+  firstName: string;
+
+  @Column()
+  lastName: string;
 
   @Column({ unique: true })
   email: string;
@@ -23,6 +26,12 @@ export class User {
 
   @OneToMany(() => Membership, (m) => m.user)
   memberships: Membership[];
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  refreshToken: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MembershipsService } from './memberships.service';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('memberships')
 export class MembershipsController {
   constructor(private readonly membershipsService: MembershipsService) {}
@@ -23,7 +33,10 @@ export class MembershipsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMembershipDto: UpdateMembershipDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateMembershipDto: UpdateMembershipDto,
+  ) {
     return this.membershipsService.update(+id, updateMembershipDto);
   }
 
