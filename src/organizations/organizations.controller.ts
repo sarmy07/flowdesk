@@ -16,6 +16,8 @@ import { CurrentUser } from 'src/auth/decorators/current.user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/common/enums/user.role.enum';
 
 @ApiBearerAuth()
 @Controller('organizations')
@@ -37,21 +39,26 @@ export class OrganizationsController {
     return this.organizationsService.findAll(user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.organizationsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateOrganizationDto: UpdateOrganizationDto,
+    @CurrentUser() user: User,
   ) {
-    return this.organizationsService.update(+id, updateOrganizationDto);
+    return this.organizationsService.update(id, updateOrganizationDto, user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.organizationsService.remove(+id);
+    return this.organizationsService.remove(id);
   }
 }

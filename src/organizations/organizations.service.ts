@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -16,8 +17,7 @@ import { UsersService } from 'src/users/users.service';
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
-    private readonly oraginzationRepo: Repository<Organization>,
-
+    private readonly organizationRepo: Repository<Organization>,
     @InjectRepository(Membership)
     private readonly membershipRepo: Repository<Membership>,
     private readonly userService: UsersService,
@@ -32,11 +32,11 @@ export class OrganizationsService {
     const user = await this.userService.findOne(userId);
     if (!user) throw new NotFoundException();
 
-    const organization = this.oraginzationRepo.create({
+    const organization = this.organizationRepo.create({
       name: dto.name,
     });
 
-    const savedOrganization = await this.oraginzationRepo.save(organization);
+    const savedOrganization = await this.organizationRepo.save(organization);
 
     const membership = this.membershipRepo.create({
       organizationId: savedOrganization.id,
@@ -52,7 +52,7 @@ export class OrganizationsService {
   async findAll(userId: string) {
     const memberships = await this.membershipRepo.find({
       where: {
-        id: userId,
+        userId,
       },
       relations: {
         organization: true,
@@ -62,32 +62,72 @@ export class OrganizationsService {
     return memberships.map((membership) => ({
       id: membership.organization.id,
       name: membership.organization.name,
-      createdAt: membership.organization.createdAt,
       role: membership.role,
+      createdAt: membership.organization.createdAt,
     }));
   }
 
   async findOne(id: string) {
-    return await this.oraginzationRepo.findOne({
+    const organization = await this.organizationRepo.findOne({
       where: {
         id,
       },
+      relations: {
+        memberships: true,
+      },
     });
+
+    if (!organization) throw new NotFoundException('organization not found');
+
+    return organization;
   }
 
   async findByName(name: string) {
-    return await this.oraginzationRepo.findOne({
+    return await this.organizationRepo.findOne({
       where: {
         name,
       },
     });
   }
 
-  update(id: number, updateOrganizationDto: UpdateOrganizationDto) {
-    return `This action updates a #${id} organization`;
+  async update(id: string, dto: UpdateOrganizationDto, userId: string) {
+    const organization = await this.findOne(id);
+
+    const memebership = await this.membershipRepo.findOne({
+      where: {
+        userId,
+        organizationId: id,
+      },
+    });
+
+    if (!memebership)
+      throw new NotFoundException('you are not a member of this organization');
+
+    if (
+      memebership.role !== OrganizationRole.OWNER &&
+      memebership.role !== OrganizationRole.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Only The Organization Owner or Admin can perform this action',
+      );
+    }
+
+    if (dto.name) {
+      const existing = await this.findByName(dto.name);
+
+      if (existing && existing.id !== organization.id) {
+        throw new ConflictException('Organization name already exists');
+      }
+      organization.name = dto.name;
+    }
+
+    return await this.organizationRepo.save(organization);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} organization`;
+  async remove(id: string) {
+    const organization = await this.findOne(id);
+    if (!organization) return null;
+
+    return await this.organizationRepo.remove(organization);
   }
 }
