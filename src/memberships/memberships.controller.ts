@@ -6,42 +6,76 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { MembershipsService } from './memberships.service';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { CurrentUser } from 'src/auth/decorators/current.user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { AddMemberDto } from './dto/add-member.dto';
 
 @ApiBearerAuth()
 @Controller('memberships')
 export class MembershipsController {
   constructor(private readonly membershipsService: MembershipsService) {}
 
-  @Post()
-  create(@Body() createMembershipDto: CreateMembershipDto) {
-    return this.membershipsService.create(createMembershipDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.membershipsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.membershipsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateMembershipDto: UpdateMembershipDto,
+  @UseGuards(JwtAuthGuard)
+  @Post('organizations/:organizationId/members')
+  @ApiOperation({ summary: 'add member' })
+  addMember(
+    @Body() dto: AddMemberDto,
+    @Param('organizationId') organizationId: string,
+    @CurrentUser() user: User,
   ) {
-    return this.membershipsService.update(+id, updateMembershipDto);
+    return this.membershipsService.AddMember(dto, organizationId, user.id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.membershipsService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get('organizations/:organizationId/members')
+  @ApiOperation({ summary: 'find all organization members' })
+  findAllByOrganization(@Param('organizationId') organizationId: string) {
+    return this.membershipsService.findAllByOrganization(organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('organizations/:organizationId/members/me')
+  @ApiOperation({ summary: 'find membership' })
+  findOne(
+    @CurrentUser() user: User,
+    @Param('organizationId') organizationId: string,
+  ) {
+    return this.membershipsService.findOne(user.id, organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('organizations/:organizationId/members/:userId/role')
+  @ApiOperation({ summary: 'update member role' })
+  update(
+    @Param('userId') userId: string,
+    @Param('organizationId') organizationId: string,
+    @Body()
+    updateMembershipDto: UpdateMembershipDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.membershipsService.updateMemberRole(
+      userId,
+      organizationId,
+      updateMembershipDto,
+      user.id,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('organizations/:organizationId/members/:userId')
+  @ApiOperation({ summary: 'remove member from organization' })
+  remove(
+    @Param('userId') userId: string,
+    @Param('organizationId') organizationId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.membershipsService.remove(userId, organizationId, user.id);
   }
 }

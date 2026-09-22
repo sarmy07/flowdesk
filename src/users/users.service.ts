@@ -17,14 +17,26 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    return await this.userRepository.find({
+      relations: {
+        memberships: true,
+      },
+    });
   }
 
   async findOne(id: string) {
     return await this.userRepository.findOne({
       where: {
         id,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        password: true,
+        memberships: true,
       },
     });
   }
@@ -33,6 +45,14 @@ export class UsersService {
     return await this.userRepository.findOne({
       where: {
         email,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        password: true,
+        memberships: true,
       },
     });
   }
@@ -45,7 +65,7 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    return await this.userRepository.delete(id);
   }
 }

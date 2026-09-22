@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateMembershipDto } from './create-membership.dto';
+import { IsEnum } from 'class-validator';
+import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 
-export class UpdateMembershipDto extends PartialType(CreateMembershipDto) {}
+export class UpdateMembershipDto {
+  @IsEnum(OrganizationRole)
+  role: OrganizationRole;
+}
