@@ -10,6 +10,7 @@ import { validation } from './config/validation.schema';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import authConfig from './auth/config/authConfig';
 
 @Module({
@@ -25,6 +26,7 @@ import authConfig from './auth/config/authConfig';
     OrganizationsModule,
     MembershipsModule,
     PlansModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
