@@ -1,5 +1,6 @@
 import { BillingInterval } from 'src/common/enums/billing.interval.enum';
 import { Organization } from 'src/organizations/entities/organization.entity';
+import { Payment } from 'src/payment/entities/payment.entity';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import {
   Column,
@@ -42,6 +43,9 @@ export class Plan {
 
   @OneToMany(() => Subscription, (s) => s.plan)
   subscriptions: Subscription[];
+
+  @OneToMany(() => Payment, (p) => p.plan)
+  payments: Payment[];
 
   @CreateDateColumn()
   createdAt: Date;

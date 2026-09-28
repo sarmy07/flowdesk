@@ -1,3 +1,4 @@
+import { PaystackService } from './payment/paystack/paystack.service';
 import { AuthModule } from './auth/auth.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -11,6 +12,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { PaymentModule } from './payment/payment.module';
 import authConfig from './auth/config/authConfig';
 
 @Module({
@@ -27,6 +29,7 @@ import authConfig from './auth/config/authConfig';
     MembershipsModule,
     PlansModule,
     SubscriptionsModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

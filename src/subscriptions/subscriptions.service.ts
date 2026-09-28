@@ -102,6 +102,15 @@ export class SubscriptionsService {
     return subscription;
   }
 
+  async findActiveByOrganization(organizationId: string) {
+    return await this.subcriptionRepo.findOne({
+      where: {
+        organizationId,
+        status: SubscriptionStatus.ACTIVE,
+      },
+    });
+  }
+
   async cancelSubscription(subscriptionId: string) {
     const subscription = await this.findOne(subscriptionId);
 

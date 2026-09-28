@@ -1,5 +1,6 @@
 import { SubscriptionStatus } from 'src/common/enums/subscription.status.enum';
 import { Organization } from 'src/organizations/entities/organization.entity';
+import { Payment } from 'src/payment/entities/payment.entity';
 import { Plan } from 'src/plans/entities/plan.entity';
 import {
   Column,
@@ -7,7 +8,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -43,6 +44,9 @@ export class Subscription {
   @ManyToOne(() => Plan, (p) => p.subscriptions)
   @JoinColumn({ name: 'planId' })
   plan: Plan;
+
+  @OneToMany(() => Payment, (p) => p.subscription)
+  payments: Payment[];
 
   @CreateDateColumn()
   createdAt: Date;

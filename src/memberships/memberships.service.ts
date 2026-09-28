@@ -84,6 +84,18 @@ export class MembershipsService {
     }));
   }
 
+  async findOrganizationByOwner(organizationId: string) {
+    return await this.membershipRepo.findOne({
+      where: {
+        id: organizationId,
+        role: OrganizationRole.OWNER,
+      },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
   async findOne(userId: string, organizationId: string) {
     const membership = await this.membershipRepo.findOne({
       where: {
