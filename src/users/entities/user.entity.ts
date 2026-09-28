@@ -1,3 +1,4 @@
+import { Role } from 'src/common/enums/user.role.enum';
 import { Membership } from 'src/memberships/entities/membership.entity';
 import {
   Column,
@@ -32,6 +33,13 @@ export class User {
     nullable: true,
   })
   refreshToken: string;
+
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.USER,
+  })
+  role: Role;
 
   @CreateDateColumn()
   createdAt: Date;
