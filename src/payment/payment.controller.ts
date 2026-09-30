@@ -25,6 +25,12 @@ export class PaymentController {
     return this.paymentService.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('verify-payment/:reference')
+  verifyPayment(@Param('reference') reference: string) {
+    return this.paymentService.verifyPayment(reference);
+  }
+
   @Get()
   findAll() {
     return this.paymentService.findAll();
@@ -32,7 +38,7 @@ export class PaymentController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.paymentService.findOne(+id);
+    return this.paymentService.findOne(id);
   }
 
   @Patch(':id')

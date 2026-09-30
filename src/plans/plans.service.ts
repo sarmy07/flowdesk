@@ -73,7 +73,6 @@ export class PlansService {
       },
     });
 
-    if (!plan) throw new NotFoundException();
     return plan;
   }
 }

@@ -14,7 +14,9 @@ import { UpdatePlanDto } from './dto/update-plan.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { Role } from 'src/common/enums/user.role.enum';
 import { Roles } from 'src/auth/decorators/role.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('plans')
 export class PlansController {
@@ -22,7 +24,11 @@ export class PlansController {
 
   @Post()
   @Roles(Role.ADMIN)
+  // create(@Body() createPlanDto: CreatePlanDto) {
+  //   return this.plansService.create(createPlanDto);
   create(@Body() createPlanDto: CreatePlanDto) {
+    console.log('CREATE PLAN CONTROLLER HIT');
+
     return this.plansService.create(createPlanDto);
   }
 

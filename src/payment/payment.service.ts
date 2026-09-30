@@ -16,6 +16,8 @@ import { OrganizationsService } from 'src/organizations/organizations.service';
 import { PlansService } from 'src/plans/plans.service';
 import { PaystackService } from './paystack/paystack.service';
 import { MembershipsService } from 'src/memberships/memberships.service';
+import { SubscriptionStatus } from 'src/common/enums/subscription.status.enum';
+import { BillingInterval } from 'src/common/enums/billing.interval.enum';
 
 @Injectable()
 export class PaymentService {
@@ -54,7 +56,7 @@ export class PaymentService {
     const amount = plan.price;
     const reference = `FLOWDESK-${randomUUID()}`;
     const owner = await this.memebershipService.findOrganizationByOwner(
-      organization.id,
+      dto.organizationId,
     );
     if (!owner) {
       throw new NotFoundException('Organization owner not found');
@@ -93,11 +95,57 @@ export class PaymentService {
     }
   }
 
+  async verifyPayment(reference: string) {
+    const payment = await this.paymentRepo.findOne({
+      where: {
+        reference,
+      },
+    });
+    if (!payment) throw new NotFoundException();
+
+    try {
+      const paystackVerify =
+        await this.paystackService.verifyTransaction(reference);
+
+      console.log('PAYSTACK VERIFY:', paystackVerify);
+
+      if (paystackVerify.data.status !== 'success') {
+        payment.status = PaymentStatus.FAILED;
+        await this.paymentRepo.save(payment);
+
+        return {
+          message: 'Payment was not successful',
+          payment,
+        };
+      }
+
+      payment.status = PaymentStatus.SUCCESS;
+      payment.paidAt = new Date();
+
+      const newSubscription = await this.subscriptionService.create({
+        organizationId: payment.organizationId,
+        planId: payment.planId,
+      });
+
+      payment.subscriptionId = newSubscription.id;
+
+      await this.paymentRepo.save(payment);
+
+      return {
+        message: 'Payment verified successfully',
+        payment,
+        subscription: newSubscription,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   findAll() {
     return `This action returns all payment`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} payment`;
   }
 

@@ -87,7 +87,7 @@ export class MembershipsService {
   async findOrganizationByOwner(organizationId: string) {
     return await this.membershipRepo.findOne({
       where: {
-        id: organizationId,
+        organizationId,
         role: OrganizationRole.OWNER,
       },
       relations: {

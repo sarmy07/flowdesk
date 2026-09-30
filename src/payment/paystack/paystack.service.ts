@@ -45,4 +45,21 @@ export class PaystackService {
 
     return response.data;
   }
+
+  async verifyTransaction(reference: string) {
+    const secretKey = this.paystackConfiguration.paystack_secret_key;
+
+    const baseUrl = this.paystackConfiguration.paystack_base_url;
+
+    const response = await firstValueFrom(
+      this.httpService.get(`${baseUrl}/transaction/verify/${reference}`, {
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          'Content-Type': 'application/json',
+        },
+      }),
+    );
+
+    return response.data;
+  }
 }
