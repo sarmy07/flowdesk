@@ -145,8 +145,20 @@ export class PaymentService {
     return `This action returns all payment`;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} payment`;
+  async findByReference(reference: string) {
+    const payment = await this.paymentRepo.findOne({
+      where: {
+        reference,
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException();
+    }
+    return payment;
+  }
+
+  async updatePayment(payment: Payment) {
+    return await this.paymentRepo.save(payment);
   }
 
   update(id: number, updatePaymentDto: UpdatePaymentDto) {

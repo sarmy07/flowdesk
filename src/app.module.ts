@@ -1,3 +1,4 @@
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { PaystackService } from './payment/paystack/paystack.service';
 import { AuthModule } from './auth/auth.module';
 import { Module } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { PaymentModule } from './payment/payment.module';
+import { UsageModule } from './usage/usage.module';
 import authConfig from './auth/config/authConfig';
 
 @Module({
@@ -30,6 +32,8 @@ import authConfig from './auth/config/authConfig';
     PlansModule,
     SubscriptionsModule,
     PaymentModule,
+    WebhooksModule,
+    UsageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
