@@ -25,6 +25,11 @@ export class User {
   @Column({ select: false })
   password: string;
 
+  @Column({
+    nullable: true,
+  })
+  username: string;
+
   @OneToMany(() => Membership, (m) => m.user)
   memberships: Membership[];
 

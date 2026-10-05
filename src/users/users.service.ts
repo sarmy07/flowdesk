@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -69,5 +69,39 @@ export class UsersService {
 
   async remove(id: string) {
     return await this.userRepository.delete(id);
+  }
+
+  async generateUsernameForUsers(firstName: string, lastName: string) {
+    const baseUsername = `${firstName.toLowerCase()}-${lastName.toLowerCase()}`;
+
+    let finalUsername = baseUsername;
+
+    while (
+      await this.userRepository.findOne({
+        where: {
+          username: finalUsername,
+        },
+      })
+    ) {
+      finalUsername = `${baseUsername}_${Math.floor(Math.random() * 10)}`;
+    }
+    return finalUsername;
+  }
+
+  async updateUserWithUsername() {
+    const users = await this.userRepository.find({
+      where: {
+        username: IsNull(),
+      },
+    });
+
+    for (const user of users) {
+      user.username = await this.generateUsernameForUsers(
+        user.firstName,
+        user.lastName,
+      );
+    }
+
+    return users;
   }
 }

@@ -45,6 +45,11 @@ export class AuthService {
       password: hash,
     });
 
+    user.username = await this.userService.generateUsernameForUsers(
+      dto.firstName,
+      dto.lastName,
+    );
+
     const { password, ...rest } = user;
     const tokens = await this.generateTokens(user);
 

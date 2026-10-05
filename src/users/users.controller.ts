@@ -29,6 +29,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN)
+  @Get('backward-users')
+  updateUserWithUsername() {
+    return this.usersService.updateUserWithUsername();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
