@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUsageDto } from './dto/create-usage.dto';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateUsageDto } from './dto/update-usage.dto';
 import { Repository } from 'typeorm';
 import { Usage } from './entities/usage.entity';
@@ -11,10 +15,18 @@ export class UsageService {
   constructor(
     @InjectRepository(Usage)
     private readonly usageRepo: Repository<Usage>,
+
+    @Inject(forwardRef(() => OrganizationsService))
     private readonly organizationService: OrganizationsService,
   ) {}
-  create(createUsageDto: CreateUsageDto) {
-    return 'This action adds a new usage';
+  async create(organizationId: string, members: number) {
+    const organization = await this.organizationService.findOne(organizationId);
+    const usage = this.usageRepo.create({
+      organizationId,
+      members,
+    });
+
+    return await this.usageRepo.save(usage);
   }
 
   async getUsage(organizationId: string) {
@@ -28,12 +40,34 @@ export class UsageService {
     return usage;
   }
 
+  async incrementMembers(organizationId: string) {
+    const usage = await this.findOne(organizationId);
+    if (!usage) throw new NotFoundException('Usage not found');
+
+    usage.members += 1;
+
+    return await this.usageRepo.save(usage);
+  }
+
+  async decrementMembers(organizationId: string) {
+    const usage = await this.findOne(organizationId);
+    if (!usage) throw new NotFoundException();
+
+    usage.members -= 1;
+
+    return await this.usageRepo.save(usage);
+  }
+
   findAll() {
     return `This action returns all usage`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} usage`;
+  async findOne(organizationId: string) {
+    return await this.usageRepo.findOne({
+      where: {
+        organizationId,
+      },
+    });
   }
 
   update(id: number, updateUsageDto: UpdateUsageDto) {

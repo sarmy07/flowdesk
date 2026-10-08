@@ -11,7 +11,7 @@ import {
 
 @Entity('usage')
 export class Usage {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()

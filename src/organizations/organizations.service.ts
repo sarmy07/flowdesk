@@ -1,6 +1,8 @@
 import {
   ConflictException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,15 +14,21 @@ import { Repository } from 'typeorm';
 import { Membership } from 'src/memberships/entities/membership.entity';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 import { UsersService } from 'src/users/users.service';
+import { UsageService } from 'src/usage/usage.service';
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepo: Repository<Organization>,
+
     @InjectRepository(Membership)
     private readonly membershipRepo: Repository<Membership>,
+
     private readonly userService: UsersService,
+
+    @Inject(forwardRef(() => UsageService))
+    private readonly usageService: UsageService,
   ) {}
 
   async create(dto: CreateOrganizationDto, userId: string) {
@@ -43,8 +51,9 @@ export class OrganizationsService {
       userId: user.id,
       role: OrganizationRole.OWNER,
     });
-
     await this.membershipRepo.save(membership);
+
+    await this.usageService.create(savedOrganization.id, 1);
 
     return savedOrganization;
   }

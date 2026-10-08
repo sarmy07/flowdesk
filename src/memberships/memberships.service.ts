@@ -13,6 +13,7 @@ import { AddMemberDto } from './dto/add-member.dto';
 import { UsersService } from 'src/users/users.service';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 import { OrganizationsService } from 'src/organizations/organizations.service';
+import { UsageService } from 'src/usage/usage.service';
 
 @Injectable()
 export class MembershipsService {
@@ -21,9 +22,10 @@ export class MembershipsService {
     private readonly membershipRepo: Repository<Membership>,
     private readonly organizationService: OrganizationsService,
     private readonly userService: UsersService,
+    private readonly usageService: UsageService,
   ) {}
 
-  async AddMember(
+  async addMember(
     dto: AddMemberDto,
     organizationId: string,
     currentUserId: string,
@@ -60,7 +62,9 @@ export class MembershipsService {
       role: OrganizationRole.MEMBER,
     });
 
-    return await this.membershipRepo.save(memebership);
+    const savedmembership = await this.membershipRepo.save(memebership);
+    await this.usageService.incrementMembers(organization.id);
+    return savedmembership;
   }
 
   async findAllByOrganization(organizationId: string) {
@@ -202,8 +206,10 @@ export class MembershipsService {
       organizationId,
     });
 
+    await this.usageService.decrementMembers(organization.id);
+
     return {
-      message: `user with ${userId} has been removed`,
+      message: `user with USER-ID ${userId} has been removed`,
     };
   }
 }

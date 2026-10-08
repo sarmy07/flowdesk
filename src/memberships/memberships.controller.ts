@@ -30,7 +30,7 @@ export class MembershipsController {
     @Param('organizationId') organizationId: string,
     @CurrentUser() user: User,
   ) {
-    return this.membershipsService.AddMember(dto, organizationId, user.id);
+    return this.membershipsService.addMember(dto, organizationId, user.id);
   }
 
   @UseGuards(JwtAuthGuard)
