@@ -8,7 +8,7 @@ import {
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Membership } from './entities/membership.entity';
-import { Repository } from 'typeorm';
+import { Column, Repository } from 'typeorm';
 import { AddMemberDto } from './dto/add-member.dto';
 import { UsersService } from 'src/users/users.service';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';

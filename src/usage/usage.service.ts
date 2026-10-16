@@ -52,9 +52,34 @@ export class UsageService {
   async decrementMembers(organizationId: string) {
     const usage = await this.findOne(organizationId);
     if (!usage) throw new NotFoundException();
-
     usage.members -= 1;
 
+    return await this.usageRepo.save(usage);
+  }
+
+  async incrementprojects(organizationId: string) {
+    const usage = await this.usageRepo.findOne({
+      where: {
+        organizationId,
+      },
+    });
+
+    if (!usage) throw new NotFoundException();
+
+    usage.projects += 1;
+    return await this.usageRepo.save(usage);
+  }
+
+  async decrementProjects(organizationId: string) {
+    const usage = await this.usageRepo.findOne({
+      where: {
+        organizationId,
+      },
+    });
+
+    if (!usage) throw new NotFoundException();
+
+    usage.projects -= 1;
     return await this.usageRepo.save(usage);
   }
 

@@ -16,8 +16,6 @@ import { OrganizationsService } from 'src/organizations/organizations.service';
 import { PlansService } from 'src/plans/plans.service';
 import { PaystackService } from './paystack/paystack.service';
 import { MembershipsService } from 'src/memberships/memberships.service';
-import { SubscriptionStatus } from 'src/common/enums/subscription.status.enum';
-import { BillingInterval } from 'src/common/enums/billing.interval.enum';
 
 @Injectable()
 export class PaymentService {

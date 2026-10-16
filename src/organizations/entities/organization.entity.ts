@@ -1,12 +1,12 @@
 import { Membership } from 'src/memberships/entities/membership.entity';
 import { Plan } from 'src/plans/entities/plan.entity';
+import { Project } from 'src/projects/entities/project.entity';
 import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import { Usage } from 'src/usage/entities/usage.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -30,6 +30,9 @@ export class Organization {
 
   @OneToOne(() => Usage, (u) => u.organization)
   usage: Usage;
+
+  @OneToMany(() => Project, (p) => p.organization)
+  projects: Project[];
 
   @CreateDateColumn()
   createdAt: Date;

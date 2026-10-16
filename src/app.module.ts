@@ -15,6 +15,7 @@ import { PlansModule } from './plans/plans.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { PaymentModule } from './payment/payment.module';
 import { UsageModule } from './usage/usage.module';
+import { ProjectsModule } from './projects/projects.module';
 import authConfig from './auth/config/authConfig';
 
 @Module({
@@ -34,6 +35,7 @@ import authConfig from './auth/config/authConfig';
     PaymentModule,
     WebhooksModule,
     UsageModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
