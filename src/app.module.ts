@@ -17,6 +17,8 @@ import { PaymentModule } from './payment/payment.module';
 import { UsageModule } from './usage/usage.module';
 import { ProjectsModule } from './projects/projects.module';
 import authConfig from './auth/config/authConfig';
+import { BullModule } from '@nestjs/bullmq';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,6 +28,12 @@ import authConfig from './auth/config/authConfig';
       load: [authConfig],
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     AuthModule,
     UsersModule,
     OrganizationsModule,
@@ -36,6 +44,7 @@ import authConfig from './auth/config/authConfig';
     WebhooksModule,
     UsageModule,
     ProjectsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

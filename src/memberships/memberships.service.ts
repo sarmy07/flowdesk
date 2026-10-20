@@ -14,6 +14,7 @@ import { UsersService } from 'src/users/users.service';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { UsageService } from 'src/usage/usage.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class MembershipsService {
@@ -23,6 +24,7 @@ export class MembershipsService {
     private readonly organizationService: OrganizationsService,
     private readonly userService: UsersService,
     private readonly usageService: UsageService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async addMember(
@@ -56,15 +58,20 @@ export class MembershipsService {
       throw new ConflictException('User already a member of this organization');
     }
 
-    const memebership = this.membershipRepo.create({
+    const membership = this.membershipRepo.create({
       userId: dto.userId,
       organizationId,
       role: OrganizationRole.MEMBER,
     });
 
-    const savedmembership = await this.membershipRepo.save(memebership);
+    const savedMembership = await this.membershipRepo.save(membership);
     await this.usageService.incrementMembers(organization.id);
-    return savedmembership;
+
+    await this.notificationService.queueInvitationEmail(
+      user.email,
+      organization.name,
+    );
+    return savedMembership;
   }
 
   async findAllByOrganization(organizationId: string) {

@@ -6,6 +6,7 @@ import { Membership } from './entities/membership.entity';
 import { UsersModule } from 'src/users/users.module';
 import { OrganizationsModule } from 'src/organizations/organizations.module';
 import { UsageModule } from 'src/usage/usage.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsageModule } from 'src/usage/usage.module';
     UsersModule,
     OrganizationsModule,
     UsageModule,
+    NotificationsModule,
   ],
   controllers: [MembershipsController],
   providers: [MembershipsService],
