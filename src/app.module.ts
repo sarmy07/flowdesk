@@ -19,6 +19,7 @@ import { ProjectsModule } from './projects/projects.module';
 import authConfig from './auth/config/authConfig';
 import { BullModule } from '@nestjs/bullmq';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     UsageModule,
     ProjectsModule,
     NotificationsModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -12,6 +12,14 @@ export class NotificationsProcessor extends WorkerHost {
       const { email, amount } = job.data;
 
       console.log(`Payment confirmation for ${email}: ${amount}`);
+    } else if (job.name === 'update-user-role') {
+      const { email, role } = job.data;
+
+      console.log(`Role update confirmation for ${email} to ${role}`);
+    } else if (job.name === 'remove-member') {
+      const { email } = job.data;
+
+      console.log(`User removal confirmation for ${email}`);
     } else {
       throw new Error(`Unknown notification job: ${job.name}`);
     }

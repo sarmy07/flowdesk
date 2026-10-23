@@ -15,6 +15,7 @@ import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { UsageService } from 'src/usage/usage.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { AuditLogsService } from 'src/audit-logs/audit-logs.service';
 
 @Injectable()
 export class MembershipsService {
@@ -25,6 +26,7 @@ export class MembershipsService {
     private readonly userService: UsersService,
     private readonly usageService: UsageService,
     private readonly notificationService: NotificationsService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async addMember(
@@ -67,10 +69,21 @@ export class MembershipsService {
     const savedMembership = await this.membershipRepo.save(membership);
     await this.usageService.incrementMembers(organization.id);
 
+    await this.auditLogsService.log({
+      organizationId: organization.id,
+      userId: currentUserId,
+      action: 'MEMBER_ADDED',
+      details: {
+        addedUserId: user.id,
+        role: OrganizationRole.MEMBER,
+      },
+    });
+
     await this.notificationService.queueInvitationEmail(
       user.email,
       organization.name,
     );
+
     return savedMembership;
   }
 
@@ -171,6 +184,10 @@ export class MembershipsService {
 
     isUserMemeber.role = dto.role;
 
+    await this.notificationService.updateUserRole(
+      isUserMemeber.user.email,
+      isUserMemeber.user.role,
+    );
     return await this.membershipRepo.save(isUserMemeber);
   }
 
@@ -214,6 +231,7 @@ export class MembershipsService {
     });
 
     await this.usageService.decrementMembers(organization.id);
+    await this.notificationService.removeMember(targetMembership.user.email);
 
     return {
       message: `user with USER-ID ${userId} has been removed`,

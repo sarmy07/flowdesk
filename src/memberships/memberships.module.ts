@@ -7,6 +7,7 @@ import { UsersModule } from 'src/users/users.module';
 import { OrganizationsModule } from 'src/organizations/organizations.module';
 import { UsageModule } from 'src/usage/usage.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { AuditLogsModule } from 'src/audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     OrganizationsModule,
     UsageModule,
     NotificationsModule,
+    AuditLogsModule,
   ],
   controllers: [MembershipsController],
   providers: [MembershipsService],

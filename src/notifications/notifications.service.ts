@@ -4,7 +4,8 @@ https://docs.nestjs.com/providers#services
 
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import { Queue } from 'bullmq';
+import { delay, Queue } from 'bullmq';
+import { attempt } from 'joi';
 
 @Injectable()
 export class NotificationsService {
@@ -36,6 +37,39 @@ export class NotificationsService {
       {
         email,
         amount,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+      },
+    );
+  }
+
+  async updateUserRole(email: string, role: string) {
+    return this.notificationsQueue.add(
+      'update-user-role',
+      {
+        email,
+        role,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+      },
+    );
+  }
+
+  async removeMember(email: string) {
+    return this.notificationsQueue.add(
+      'remove-member',
+      {
+        email,
       },
       {
         attempts: 3,
