@@ -58,7 +58,7 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.organizationsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.organizationsService.remove(id, user.id);
   }
 }

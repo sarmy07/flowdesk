@@ -20,6 +20,8 @@ import authConfig from './auth/config/authConfig';
 import { BullModule } from '@nestjs/bullmq';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -35,6 +37,14 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
         port: 6379,
       },
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 100,
+        },
+      ],
+    }),
     AuthModule,
     UsersModule,
     OrganizationsModule,
@@ -49,6 +59,12 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     AuditLogsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

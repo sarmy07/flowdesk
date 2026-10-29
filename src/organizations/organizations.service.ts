@@ -15,6 +15,8 @@ import { Membership } from 'src/memberships/entities/membership.entity';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';
 import { UsersService } from 'src/users/users.service';
 import { UsageService } from 'src/usage/usage.service';
+import { AuditLogsService } from 'src/audit-logs/audit-logs.service';
+import { Role } from 'src/common/enums/user.role.enum';
 
 @Injectable()
 export class OrganizationsService {
@@ -26,6 +28,8 @@ export class OrganizationsService {
     private readonly membershipRepo: Repository<Membership>,
 
     private readonly userService: UsersService,
+
+    private readonly auditLogService: AuditLogsService,
 
     @Inject(forwardRef(() => UsageService))
     private readonly usageService: UsageService,
@@ -101,20 +105,20 @@ export class OrganizationsService {
 
   async update(id: string, dto: UpdateOrganizationDto, userId: string) {
     const organization = await this.findOne(id);
-
-    const memebership = await this.membershipRepo.findOne({
+    const oldNameOfOrganization = organization.name;
+    const membership = await this.membershipRepo.findOne({
       where: {
         userId,
         organizationId: id,
       },
     });
 
-    if (!memebership)
+    if (!membership)
       throw new NotFoundException('you are not a member of this organization');
 
     if (
-      memebership.role !== OrganizationRole.OWNER &&
-      memebership.role !== OrganizationRole.ADMIN
+      membership.role !== OrganizationRole.OWNER &&
+      membership.role !== OrganizationRole.ADMIN
     ) {
       throw new ForbiddenException(
         'Only The Organization Owner or Admin can perform this action',
@@ -130,13 +134,56 @@ export class OrganizationsService {
       organization.name = dto.name;
     }
 
-    return await this.organizationRepo.save(organization);
+    const nameChanged =
+      dto.name !== undefined && dto.name !== oldNameOfOrganization;
+
+    const updatedOrganization = await this.organizationRepo.save(organization);
+
+    if (nameChanged) {
+      await this.auditLogService.log({
+        organizationId: organization.id,
+        userId: userId,
+        action: 'ORGANIZATION_UPDATED',
+        details: {
+          oldName: oldNameOfOrganization,
+          newName: organization.name,
+        },
+      });
+    }
+
+    return updatedOrganization;
   }
 
-  async remove(id: string) {
+  async remove(id: string, currentUserId: string) {
+    const currentUser = await this.userService.findOne(currentUserId);
+    if (!currentUser) throw new NotFoundException();
+
+    if (currentUser.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'Only platform admin can delete organization',
+      );
+    }
+
     const organization = await this.findOne(id);
     if (!organization) return null;
 
-    return await this.organizationRepo.remove(organization);
+    const organizationId = organization.id;
+    const organizationName = organization.name;
+
+    await this.organizationRepo.remove(organization);
+
+    await this.auditLogService.log({
+      organizationId: null,
+      userId: currentUserId,
+      action: 'ORGANIZATION_REMOVED',
+      details: {
+        deletedOrganization: organizationId,
+        organizationName,
+      },
+    });
+
+    return {
+      message: `Organization "${organizationName}" removed!`,
+    };
   }
 }

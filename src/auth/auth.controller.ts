@@ -11,6 +11,7 @@ import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { RefreshTokenDto } from './dtos/refresh.token.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiBearerAuth()
 @Controller('auth')
@@ -23,6 +24,7 @@ export class AuthController {
   }
 
   @Post('signin')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   signin(@Body() dto: SigninDto) {
     return this.authService.signin(dto);
   }

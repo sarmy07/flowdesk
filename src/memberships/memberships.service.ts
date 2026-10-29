@@ -8,7 +8,7 @@ import {
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Membership } from './entities/membership.entity';
-import { Column, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AddMemberDto } from './dto/add-member.dto';
 import { UsersService } from 'src/users/users.service';
 import { OrganizationRole } from 'src/common/enums/organization-role.enum';
@@ -126,6 +126,9 @@ export class MembershipsService {
         userId,
         organizationId,
       },
+      relations: {
+        user: true,
+      },
     });
 
     return membership;
@@ -168,6 +171,8 @@ export class MembershipsService {
       );
     }
 
+    const oldUserRole = isUserMemeber.role;
+
     if (
       dto.role === OrganizationRole.OWNER &&
       currentMembership.role !== OrganizationRole.OWNER
@@ -182,13 +187,35 @@ export class MembershipsService {
       throw new ForbiddenException('the owner cannot be demoted');
     }
 
+    const roleChanged = dto.role !== undefined && dto.role !== oldUserRole;
+
+    if (dto.role === oldUserRole) {
+      return isUserMemeber.role;
+    }
+
     isUserMemeber.role = dto.role;
+
+    const updatedUserRole = await this.membershipRepo.save(isUserMemeber);
+
+    if (roleChanged) {
+      await this.auditLogsService.log({
+        organizationId: organizationId,
+        userId: currentUserId,
+        action: 'MEMBER_ROLE_UPDATED',
+        details: {
+          targetUserId: userId,
+          oldRole: oldUserRole,
+          newRole: updatedUserRole.role,
+        },
+      });
+    }
 
     await this.notificationService.updateUserRole(
       isUserMemeber.user.email,
-      isUserMemeber.user.role,
+      updatedUserRole.role,
     );
-    return await this.membershipRepo.save(isUserMemeber);
+
+    return updatedUserRole;
   }
 
   async remove(userId: string, organizationId: string, currentUserId: string) {
@@ -231,8 +258,18 @@ export class MembershipsService {
     });
 
     await this.usageService.decrementMembers(organization.id);
-    await this.notificationService.removeMember(targetMembership.user.email);
 
+    await this.auditLogsService.log({
+      organizationId: organizationId,
+      userId: currentUserId,
+      action: 'MEMBER_REMOVED',
+      details: {
+        removedUserId: userId,
+        role: targetMembership.role,
+      },
+    });
+
+    await this.notificationService.removeMember(targetMembership.user.email);
     return {
       message: `user with USER-ID ${userId} has been removed`,
     };

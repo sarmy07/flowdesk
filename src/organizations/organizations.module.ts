@@ -6,11 +6,13 @@ import { Organization } from './entities/organization.entity';
 import { Membership } from 'src/memberships/entities/membership.entity';
 import { UsersModule } from 'src/users/users.module';
 import { UsageModule } from 'src/usage/usage.module';
+import { AuditLogsModule } from 'src/audit-logs/audit-logs.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Organization, Membership]),
     UsersModule,
+    AuditLogsModule,
     forwardRef(() => UsageModule),
   ],
   controllers: [OrganizationsController],
