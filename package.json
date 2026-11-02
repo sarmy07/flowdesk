@@ -25,8 +25,10 @@
     "db:drop": "npm run typeorm schema:drop"
   },
   "dependencies": {
+    "@keyv/redis": "^6.1.0",
     "@nestjs/axios": "^12.0.1",
     "@nestjs/bullmq": "^12.0.0",
+    "@nestjs/cache-manager": "^12.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^12.0.0",
     "@nestjs/core": "^11.0.1",
@@ -39,6 +41,7 @@
     "axios": "^1.20.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^6.3.17",
+    "cache-manager": "^7.2.9",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^17.4.2",

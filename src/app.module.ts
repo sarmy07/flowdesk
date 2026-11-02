@@ -5,7 +5,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { dataSourceOptions } from 'db/data-source';
 import { UsersModule } from './users/users.module';
 import { validation } from './config/validation.schema';
@@ -22,6 +22,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
   imports: [
@@ -31,12 +33,21 @@ import { APP_GUARD } from '@nestjs/core';
       load: [authConfig],
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
-    BullModule.forRoot({
-      connection: {
-        host: 'localhost',
-        port: 6379,
-      },
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: Number(config.get<string>('REDIS_PORT', '6379')),
+        },
+      }),
     }),
+    // BullModule.forRoot({
+    //   connection: {
+    //     host: 'localhost',
+    //     port: 6379,
+    //   },
+    // }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -44,6 +55,21 @@ import { APP_GUARD } from '@nestjs/core';
           limit: 100,
         },
       ],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          stores: [
+            createKeyv(
+              `redis://${config.get<string>('REDIS_HOST', 'localhost')}:${config.get<string>('REDIS_PORT', '6379')}`,
+              // 'redis://redis:6379'
+            ),
+          ],
+          ttl: 60_000,
+        }),
+      }),
     }),
     AuthModule,
     UsersModule,

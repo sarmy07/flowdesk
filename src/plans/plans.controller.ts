@@ -14,7 +14,7 @@ import { UpdatePlanDto } from './dto/update-plan.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { Role } from 'src/common/enums/user.role.enum';
 import { Roles } from 'src/auth/decorators/role.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -40,6 +40,15 @@ export class PlansController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.plansService.findOne(id);
+  }
+
+  @Patch(':planId')
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Activate and Deactivate Plans - Admins only',
+  })
+  isActiveInActive(@Param('planId') planId: string) {
+    return this.plansService.isActiveInActive(planId);
   }
 
   @Patch(':id')
