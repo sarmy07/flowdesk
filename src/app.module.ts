@@ -1,3 +1,4 @@
+import { SubcriptionExpirationService } from './subscriptions/subcription-expiration.service';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { PaystackService } from './payment/paystack/paystack.service';
 import { AuthModule } from './auth/auth.module';
@@ -24,6 +25,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -71,6 +73,7 @@ import { createKeyv } from '@keyv/redis';
         }),
       }),
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     OrganizationsModule,

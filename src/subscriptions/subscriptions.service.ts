@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -150,5 +151,37 @@ export class SubscriptionsService {
     }
 
     return await this.subcriptionRepo.save(subscription);
+  }
+
+  async changePlan(organizationId: string, planId: string) {
+    const organization = await this.organizationService.findOne(organizationId);
+    if (!organization) throw new NotFoundException();
+
+    const currentSubcrption = await this.subcriptionRepo.findOne({
+      where: {
+        organizationId,
+        status: SubscriptionStatus.ACTIVE,
+      },
+    });
+    if (!currentSubcrption) throw new NotFoundException();
+
+    const newPlan = await this.planService.findOne(planId);
+    if (!newPlan.isActive) throw new BadRequestException('plan is not active');
+
+    if (currentSubcrption.planId === planId) {
+      throw new ConflictException(
+        'Your organization is already subscribed to this plan',
+      );
+    }
+
+    currentSubcrption.status = SubscriptionStatus.CANCELLED;
+    await this.subcriptionRepo.save(currentSubcrption);
+
+    const changedPlan = await this.create({
+      organizationId,
+      planId,
+    });
+
+    return changedPlan;
   }
 }

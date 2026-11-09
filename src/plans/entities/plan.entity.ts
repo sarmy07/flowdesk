@@ -10,6 +10,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 
 @Entity()
@@ -46,6 +47,9 @@ export class Plan {
 
   @OneToMany(() => Payment, (p) => p.plan)
   payments: Payment[];
+
+  @VersionColumn()
+  version: number;
 
   @CreateDateColumn()
   createdAt: Date;

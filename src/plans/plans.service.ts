@@ -45,11 +45,16 @@ export class PlansService {
       },
     });
 
-    await this.cacheManager.set('plans:active', plans, 6000);
+    await this.cacheManager.set('plans:active', plans, 60000);
     return plans;
   }
 
   async findOne(id: string) {
+    const cacheKey = `plans:${id}`;
+    const cachedPlan = await this.cacheManager.get<Plan>(cacheKey);
+
+    if (cachedPlan) return cachedPlan;
+
     const plan = await this.planRepo.findOne({
       where: {
         id,
@@ -57,11 +62,18 @@ export class PlansService {
     });
 
     if (!plan) throw new NotFoundException();
+    await this.cacheManager.set(cacheKey, plan, 60000);
     return plan;
   }
 
   async update(id: string, dto: UpdatePlanDto) {
     const plan = await this.findOne(id);
+
+    if (dto.version !== plan.version) {
+      throw new ConflictException(
+        'plan has been updated by someone else. Please refresh and try again',
+      );
+    }
 
     if (dto.name) {
       const nameExists = await this.findPlanByName(dto.name);
@@ -71,10 +83,15 @@ export class PlansService {
       }
     }
 
-    Object.assign(plan, dto);
+    const { version, ...updateData } = dto;
+    Object.assign(plan, updateData);
+
+    const updatedPlan = await this.planRepo.save(plan);
 
     await this.cacheManager.del('plans:active');
-    return await this.planRepo.save(plan);
+    await this.cacheManager.del(`plan${id}`);
+
+    return updatedPlan;
   }
 
   async remove(id: string) {
@@ -91,7 +108,11 @@ export class PlansService {
     const plan = await this.findOne(planId);
 
     plan.isActive = !plan.isActive;
-    return await this.planRepo.save(plan);
+    const updatedPlan = await this.planRepo.save(plan);
+    await this.cacheManager.del('plans:active');
+    await this.cacheManager.del(`plans:${planId}`);
+
+    return updatedPlan;
   }
 
   async findPlanByName(name: string) {

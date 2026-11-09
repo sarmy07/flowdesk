@@ -87,6 +87,9 @@ export class OrganizationsService {
       },
       relations: {
         memberships: true,
+        subscriptions: {
+          plan: true,
+        },
       },
     });
 
